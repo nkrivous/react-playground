@@ -1,0 +1,15 @@
+.gv-tab {
+  cursor: pointer;
+  color: white;
+  margin: 0 1em;
+  margin-bottom: 0.2em;
+  &--active {
+    &::after {
+      content: "";
+      display: block;
+      padding-top: 0.2em;
+      width: 1em;
+      border-bottom: 0.15em solid red;
+    }
+  }
+}
