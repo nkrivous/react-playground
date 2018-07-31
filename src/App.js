@@ -5,7 +5,7 @@ import "./styles/common.scss";
 import { Field, withFormik } from "formik";
 
 import GVTextField from "./gv-input-text";
-import withFormikField from "./with-formik-field";
+import GVFormikField from "./gv-formik-field";
 
 class App extends Component {
   handleSubmit = (loginFormData, setSubmitting) => {
@@ -33,19 +33,21 @@ let LoginForm = ({
       <div className="login">
         <div className="login__header">Login</div>
 
-        <Field
+        <GVFormikField
           type="email"
           name="email"
           label="Email"
-          render={withFormikField(GVTextField)}
+          component={GVTextField}
         />
-        <Field
+        <GVFormikField
           type="password"
           name="password"
-          label="Password"
-          component={withFormikField(GVTextField)}
+          placeholder="Password"
+          component={GVTextField}
+          adornment={<a href="example.com">forgot?</a>}
+          adornmentPosition="end"
+          disabled
         />
-        <Field name="firstName" component={CustomInputComponent} />
         <input type="submit" />
       </div>
     </form>
@@ -58,21 +60,37 @@ let LoginFormFormik = withFormik({
     email: "",
     password: ""
   }),
-  //validationSchema: validationSchema,
+  validate: values => {
+    let errors = {};
+    if (!values.email) {
+      errors.email = "Required";
+    } else if (
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
+    ) {
+      errors.email = "Invalid email address";
+    }
+    return errors;
+  },
   handleSubmit: (values, { props, setSubmitting }) => {
     props.onSubmit(values, setSubmitting);
   }
 })(LoginForm);
 
-const CustomInputComponent = ({
-  field // { name, value, onChange, onBlur }
-}) => (
-  <CustomComponent
-    onBlur={field.onBlur}
-    onChange={field.onChange}
-    name={field.name}
-    value={field.value}
-    placeholder="123"
+const CustomInputComponent = ({ GVComponent, ...props }) => (
+  <Field
+    {...props}
+    name="aaa"
+    render={({ field }) => {
+      return (
+        <GVComponent
+          onBlur={field.onBlur}
+          onChange={field.onChange}
+          name={field.name}
+          value={field.value}
+          placeholder="123"
+        />
+      );
+    }}
   />
 );
 

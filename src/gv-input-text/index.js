@@ -19,10 +19,12 @@ class GVTextField extends React.Component {
     this.setState({ focused: true, shrink: true });
   };
 
-  handleBlur = () => {
+  handleBlur = e => {
     this.setState({
       focused: false
     });
+
+    if (this.props.onBlur) this.props.onBlur(e);
   };
 
   renderLabel = () => {
@@ -32,6 +34,7 @@ class GVTextField extends React.Component {
         className={classnames("gv-text-field__label", {
           "gv-text-field__label--shrink":
             this.state.focused ||
+            this.props.adornment ||
             (this.props.value && this.props.value.length > 0)
         })}
       >
@@ -40,61 +43,79 @@ class GVTextField extends React.Component {
     );
   };
 
-  renderInput = () => {
+  renderAdornment = () => {
+    const { adornment, adornmentPosition } = this.props;
+    if (!adornment) return null;
     return (
       <div
-        className={classnames(this.props.className || "gv-text-field", {
-          "gv-text-field--invalid": this.props.touched && this.props.error,
-          "gv-text-field--focused": this.state.focused
+        className={classnames("gv-text-field__adornment", {
+          "gv-text-field__adornment--start": adornmentPosition === "start",
+          "gv-text-field__adornment--end": adornmentPosition === "end"
         })}
       >
-        <input
-          type="text"
-          className={classnames("gv-text-field__input")}
-          type="text"
-          onBlur={this.props.onBlur}
-          onChange={this.props.onChange}
-          name={this.props.name}
-          value={this.props.value}
-          placeholder={this.props.placeholder}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-          {...this.props}
-        />
+        {adornment}
       </div>
+    );
+  };
+
+  renderInput = () => {
+    const {
+      type,
+      onBlur,
+      className,
+      touched,
+      error,
+      adornment,
+      adornmentPosition,
+      ...otherProps
+    } = this.props;
+    return (
+      <input
+        type={type || "text"}
+        className={classnames("gv-text-field__input")}
+        onFocus={this.handleFocus}
+        onBlur={this.handleBlur}
+        {...otherProps}
+      />
     );
   };
   render() {
     return (
       <div className="gv-text-field__wrapper">
         {this.renderLabel()}
-        {this.renderInput()}
+        <div
+          className={classnames(this.props.className || "gv-text-field", {
+            "gv-text-field--disabled": this.props.disabled,
+            "gv-text-field--invalid": this.props.touched && this.props.error,
+            "gv-text-field--focused": this.state.focused
+          })}
+        >
+          {this.renderInput()}
+          {this.renderAdornment()}
+        </div>
         {this.showError()}
       </div>
     );
-    /*({
-    //field, // { name, value, onChange, onBlur }
-    label,
-    name,
-    value, //field.value
-    touched, //touched[field.name]
-    error, //errors[field.name]
-    setFieldValue, // form.setFieldValue
-    number,
-    className,
-    //form: { touched, errors, setFieldValue }, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
-    ...props
-  }) =>*/
   }
 }
 
 export default GVTextField;
 
 GVTextField.propTypes = {
-  label: PropTypes.string.isRequired,
+  type: PropTypes.string,
+  label: PropTypes.string,
   name: PropTypes.string.isRequired,
+  value: PropTypes.string,
   touched: PropTypes.bool,
   error: PropTypes.string,
   className: PropTypes.string,
-  onChange: PropTypes.func
+  placeholder: PropTypes.string,
+  adornment: PropTypes.node,
+  adornmentPosition: PropTypes.oneOf(["start", "end"]),
+  onChange: PropTypes.func,
+  onBlur: PropTypes.func
+};
+
+GVTextField.defaultProps = {
+  adornmentPosition: "end"
 };
